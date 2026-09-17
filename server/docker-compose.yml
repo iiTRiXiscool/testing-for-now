@@ -1,0 +1,33 @@
+# For local development only. In production, use a managed Postgres
+# provider (Neon, Supabase, Render, RDS, etc) instead of the "db" service
+# below, and just point DATABASE_URL at it.
+version: "3.8"
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: koxyos
+      POSTGRES_PASSWORD: koxyos
+      POSTGRES_DB: koxyos
+    ports:
+      - "5432:5432"
+    volumes:
+      - koxyos_pgdata:/var/lib/postgresql/data
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://koxyos:koxyos@db:5432/koxyos
+      DATABASE_SSL: "false"
+      JWT_SECRET: local-dev-secret-change-me
+      CORS_ORIGINS: "http://localhost:5500,http://127.0.0.1:5500"
+      PORT: "8080"
+
+volumes:
+  koxyos_pgdata:
