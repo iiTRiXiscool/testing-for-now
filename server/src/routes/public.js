@@ -43,4 +43,30 @@ router.get('/services', async (req, res, next) => {
   }
 });
 
+// GET /api/shops/:slug/categories
+router.get('/categories', async (req, res, next) => {
+  try {
+    const { rows } = await db.query(
+      'select id, key, label_en, label_fr, sort_order from categories where shop_id = $1 order by sort_order, created_at',
+      [req.shopRow.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// GET /api/shops/:slug/gallery
+router.get('/gallery', async (req, res, next) => {
+  try {
+    const { rows } = await db.query(
+      'select id, url, caption_en, caption_fr, sort_order from gallery_images where shop_id = $1 order by sort_order, created_at',
+      [req.shopRow.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    next(e);
+  }
+});
+
 module.exports = router;

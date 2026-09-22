@@ -28,6 +28,14 @@ services:
       JWT_SECRET: local-dev-secret-change-me
       CORS_ORIGINS: "http://localhost:5500,http://127.0.0.1:5500"
       PORT: "8080"
+    volumes:
+      # Persist uploaded gallery/service/barber photos across container
+      # restarts and rebuilds. On a host with a single, persistent disk
+      # (a VPS, Railway, Render, etc) this is enough; on serverless or
+      # multi-instance hosting, swap the upload storage for S3/Cloudinary
+      # instead (see routes/admin.js) since local disk won't be shared/kept.
+      - koxyos_uploads:/app/uploads
 
 volumes:
   koxyos_pgdata:
+  koxyos_uploads:

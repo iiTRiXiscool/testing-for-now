@@ -1,6 +1,9 @@
 const express = require('express');
 const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
 const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { loadShopOr404 } = require('../shops');
@@ -11,6 +14,46 @@ const router = express.Router({ mergeParams: true });
 function newId(prefix) {
   return `${prefix}_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`;
 }
+
+function slugify(s) {
+  return String(s || '')
+    .toLowerCase()
+    .trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
+
+// ---------------- image uploads ----------------
+// Local-disk storage so this works out of the box with zero extra services.
+// Files are served back out statically from /uploads (see src/index.js).
+// If you move off a single persistent disk (serverless, multi-instance
+// hosting, etc), swap this `storage` for an S3/Cloudinary/etc. adapter —
+// everything else (the route, the response shape) can stay the same.
+const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const ALLOWED_IMAGE_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
+const uploadStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  filename: (req, file, cb) => {
+    const ext = (path.extname(file.originalname) || '').toLowerCase().replace(/[^a-z0-9.]/g, '').slice(0, 10);
+    cb(null, `${req.shop.id}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage: uploadStorage,
+  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_IMAGE_MIME.has(file.mimetype)) {
+      return cb(new Error('Only JPEG, PNG, WEBP, or GIF images are allowed.'));
+    }
+    cb(null, true);
+  },
+});
 
 const EMPTY_SCHEDULE = { mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: [] };
 const DAY_KEYS = Object.keys(EMPTY_SCHEDULE);
@@ -247,6 +290,131 @@ router.delete('/services/:id', async (req, res, next) => {
   } catch (e) {
     next(e);
   }
+});
+
+// ---------------- service categories ----------------
+// A category is { id, key, label_en, label_fr, sort_order }. "key" is a
+// stable slug (derived from the label) that gets stored on services.category
+// and is never shown to customers directly.
+
+// POST /api/shops/:slug/admin/categories  { label_en, label_fr }
+router.post('/categories', async (req, res, next) => {
+  try {
+    const { label_en, label_fr } = req.body || {};
+    const en = (label_en || '').trim();
+    const fr = (label_fr || '').trim();
+    if (!en && !fr) {
+      return res.status(400).json({ error: 'At least one of label_en / label_fr is required.' });
+    }
+
+    let key = slugify(en || fr);
+    if (!key) {
+      return res.status(400).json({ error: 'Could not derive a category key from that label — try adding a letter or number.' });
+    }
+    // Keys must be unique per shop; suffix -2, -3, ... on a clash.
+    let candidate = key;
+    for (let n = 2; n <= 50; n++) {
+      const { rows: clash } = await db.query('select 1 from categories where shop_id = $1 and key = $2', [
+        req.shop.id,
+        candidate,
+      ]);
+      if (!clash[0]) { key = candidate; break; }
+      candidate = `${key}-${n}`;
+    }
+
+    const { rows: maxRows } = await db.query(
+      'select coalesce(max(sort_order), -1) + 1 as next from categories where shop_id = $1',
+      [req.shop.id]
+    );
+    const id = newId('c');
+    const { rows } = await db.query(
+      `insert into categories (id, shop_id, key, label_en, label_fr, sort_order)
+       values ($1, $2, $3, $4, $5, $6)
+       returning id, key, label_en, label_fr, sort_order`,
+      [id, req.shop.id, key, en, fr, maxRows[0].next]
+    );
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// DELETE /api/shops/:slug/admin/categories/:id
+// Any service still using this category's key is left alone (it just won't
+// match a visible tab anymore, aside from "All") rather than being deleted
+// or silently reassigned.
+router.delete('/categories/:id', async (req, res, next) => {
+  try {
+    const { rowCount } = await db.query('delete from categories where id = $1 and shop_id = $2', [
+      req.params.id,
+      req.shop.id,
+    ]);
+    if (!rowCount) return res.status(404).json({ error: 'Category not found.' });
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ---------------- gallery photos ----------------
+
+// POST /api/shops/:slug/admin/gallery  { url, caption_en?, caption_fr? }
+// `url` normally comes from a prior POST /admin/uploads call.
+router.post('/gallery', async (req, res, next) => {
+  try {
+    const { url, caption_en, caption_fr } = req.body || {};
+    if (typeof url !== 'string' || !url.trim()) {
+      return res.status(400).json({ error: 'Image url is required — upload the image first via /admin/uploads.' });
+    }
+    const { rows: maxRows } = await db.query(
+      'select coalesce(max(sort_order), -1) + 1 as next from gallery_images where shop_id = $1',
+      [req.shop.id]
+    );
+    const id = newId('g');
+    const { rows } = await db.query(
+      `insert into gallery_images (id, shop_id, url, caption_en, caption_fr, sort_order)
+       values ($1, $2, $3, $4, $5, $6)
+       returning id, url, caption_en, caption_fr, sort_order`,
+      [id, req.shop.id, url.trim(), (caption_en || '').trim(), (caption_fr || '').trim(), maxRows[0].next]
+    );
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// DELETE /api/shops/:slug/admin/gallery/:id
+router.delete('/gallery/:id', async (req, res, next) => {
+  try {
+    const { rowCount } = await db.query('delete from gallery_images where id = $1 and shop_id = $2', [
+      req.params.id,
+      req.shop.id,
+    ]);
+    if (!rowCount) return res.status(404).json({ error: 'Photo not found.' });
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ---------------- image upload ----------------
+
+// POST /api/shops/:slug/admin/uploads  (multipart/form-data, field name "image")
+// Used by both the gallery drag-and-drop and (optionally) service/barber
+// photo fields. Returns { url } pointing at the stored image; the caller is
+// responsible for then saving that url onto a gallery item / service / barber.
+router.post('/uploads', (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      const msg = err.code === 'LIMIT_FILE_SIZE' ? 'Image is too large (max 8MB).' : (err.message || 'Upload failed.');
+      return res.status(400).json({ error: msg });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file was uploaded.' });
+    }
+    const publicBase = (process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+    res.status(201).json({ url: `${publicBase}/uploads/${req.file.filename}` });
+  });
 });
 
 module.exports = router;
