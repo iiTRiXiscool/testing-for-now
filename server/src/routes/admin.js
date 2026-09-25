@@ -394,6 +394,35 @@ router.post('/gallery', async (req, res, next) => {
   }
 });
 
+// PUT /api/shops/:slug/admin/gallery/reorder  { order: [id1, id2, id3, ...] }
+// `order` is every gallery photo id for this shop, in the new display
+// order. Ids that don't belong to this shop are silently ignored (the
+// where clause below scopes every row to req.shop.id).
+router.put('/gallery/reorder', async (req, res, next) => {
+  try {
+    const { order } = req.body || {};
+    if (!Array.isArray(order) || order.length === 0) {
+      return res.status(400).json({ error: '"order" must be a non-empty array of gallery photo ids.' });
+    }
+    const ids = order.map((id) => String(id));
+    const positions = order.map((_, i) => i);
+    await db.query(
+      `update gallery_images as g
+       set sort_order = v.pos
+       from unnest($1::text[], $2::int[]) as v(id, pos)
+       where g.id = v.id and g.shop_id = $3`,
+      [ids, positions, req.shop.id]
+    );
+    const { rows } = await db.query(
+      'select id, url, caption_en, caption_fr, sort_order from gallery_images where shop_id = $1 order by sort_order, created_at',
+      [req.shop.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    next(e);
+  }
+});
+
 // DELETE /api/shops/:slug/admin/gallery/:id
 router.delete('/gallery/:id', async (req, res, next) => {
   try {
