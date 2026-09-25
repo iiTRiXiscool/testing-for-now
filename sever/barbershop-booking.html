@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koxyos — Book a chair</title>
+<meta name="description" content="Pick your barber and an open time slot at Koxyos in Tangier, then confirm your appointment straight over WhatsApp.">
+
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Koxyos — Book a chair">
+<meta property="og:description" content="Pick your barber and an open time slot, then confirm straight over WhatsApp.">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Koxyos — Book a chair">
+<meta name="twitter:description" content="Pick your barber and an open time slot, then confirm straight over WhatsApp.">
+<meta name="twitter:image" content="og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1815;
+    --ink-soft:#242019;
+    --ink-card:#2A241D;
+    --bone:#EDE6D6;
+    --bone-dim:#AFA697;
+    --brass:#C89B3C;
+    --brass-dim:#A6883F;
+    --rust:#8C3B2E;
+    --line: rgba(237,230,214,0.14);
+    --line-strong: rgba(237,230,214,0.28);
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--bone);
+    font-family:'Work Sans',sans-serif;
+    line-height:1.5;
+    opacity:0; transition:opacity 0.32s ease;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.page-in{opacity:1;}
+  body.page-out{opacity:0;}
+  @media (prefers-reduced-motion: reduce){
+    body{transition:none; opacity:1;}
+  }
+  h1,h2,h3{
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:700;
+    letter-spacing:0.01em;
+    margin:0;
+  }
+  .mono{font-family:'Space Mono',monospace;}
+  button{font-family:inherit;}
+  a{color:var(--brass);}
+  ::selection{background:var(--brass);color:var(--ink);}
+
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- header ---------- */
+  .site-header{
+    padding:22px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .brand{
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:700;
+    font-size:1.4rem;
+    letter-spacing:0.02em;
+  }
+  .brand span{color:var(--brass);}
+  .logo-mark{display:block;height:44px;width:auto;}
+  .logo-mark.lg{height:130px;}
+  .logo-mark.sm{height:52px;}
+  .social-row{display:flex;align-items:center;gap:10px;}
+  .social-row a{display:flex;align-items:center;justify-content:center;padding:0;border:none;background:none;}
+  .social-row a img{display:block;width:22px;height:22px;object-fit:contain;filter:brightness(0.9);transition:transform 0.2s ease, filter 0.2s ease;}
+  .social-row a:hover img{filter:brightness(1.1);transform:translateY(-1px);}
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:64px 0 56px;
+    position:relative;
+    overflow:hidden;
+    border-bottom:1px solid var(--line);
+  }
+  .pole{
+    position:absolute;
+    top:-40px; right:-40px;
+    width:220px; height:220px;
+    border-radius:50%;
+    opacity:0.5;
+    background:repeating-linear-gradient(
+      55deg,
+      var(--rust) 0px, var(--rust) 18px,
+      var(--bone) 18px, var(--bone) 36px,
+      var(--brass) 36px, var(--brass) 54px
+    );
+    filter: blur(0.3px);
+    mask-image: radial-gradient(circle, black 60%, transparent 100%);
+  }
+  .hero h1{
+    font-size:clamp(2.4rem, 7vw, 4.2rem);
+    line-height:0.98;
+    max-width:11ch;
+    position:relative;
+  }
+  .hero p{
+    margin:18px 0 0;
+    max-width:42ch;
+    color:var(--bone-dim);
+    font-size:1.05rem;
+    position:relative;
+  }
+  .cta{
+    display:inline-block;
+    margin-top:30px;
+    background:var(--brass);
+    color:var(--ink);
+    border:none;
+    padding:14px 26px;
+    font-weight:700;
+    font-size:0.95rem;
+    border-radius:var(--radius);
+    cursor:pointer;
+    position:relative;
+  }
+  .cta:hover{background:#DCAE4E;}
+
+  /* ---------- barbers ---------- */
+  .section{padding:52px 0;}
+  .section h2{
+    font-size:1.8rem;
+    margin-bottom:6px;
+  }
+  .section .lede{color:var(--bone-dim);margin:0 0 30px;font-size:0.98rem;}
+
+  .barber-row-wrap{position:relative;}
+  .barber-row{
+    display:flex;
+    gap:18px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:10px;
+    margin-bottom:-10px;
+    scrollbar-width:none;
+    cursor:grab;
+  }
+  .barber-row.dragging{cursor:grabbing; scroll-snap-type:none;}
+  .barber-row::-webkit-scrollbar{display:none;}
+  .barber-row .barber-card{
+    flex:0 0 240px;
+    scroll-snap-align:start;
+  }
+  .row-arrow{
+    display:flex; align-items:center; justify-content:center;
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:38px; height:38px; border-radius:50%;
+    background:var(--ink-card); border:1px solid var(--line-strong); color:var(--bone);
+    cursor:pointer; z-index:3;
+    transition:opacity 0.15s ease, border-color 0.15s ease;
+  }
+  .row-arrow:hover{border-color:var(--brass); color:var(--brass);}
+  .row-arrow.prev{left:-10px;}
+  .row-arrow.next{right:-10px;}
+  .row-arrow[disabled]{opacity:0; pointer-events:none;}
+  .row-arrow svg{width:16px;height:16px;}
+  @media (max-width:700px){ .row-arrow{display:none;} }
+  .swipe-hint{
+    display:flex; align-items:center; gap:8px;
+    color:var(--bone-dim); font-family:'Space Mono',monospace; font-size:0.72rem;
+    margin-top:10px;
+  }
+  .swipe-hint .line{width:24px;height:1px;background:var(--line-strong);}
+  @media (min-width:700px){ .swipe-hint{display:none;} }
+  .barber-card{
+    background:var(--ink-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:0 0 18px;
+    text-align:left;
+    cursor:pointer;
+    position:relative;
+    color:var(--bone);
+    overflow:hidden;
+    transition:border-color 0.15s ease, transform 0.25s ease;
+  }
+  .barber-card:hover{border-color:var(--line-strong); transform:translateY(-5px);}
+  .barber-card.selected{border-color:var(--brass);}
+  .barber-card.selected .barber-photo::after{
+    content:"";
+    position:absolute; top:12px; right:12px;
+    width:10px;height:10px;border-radius:50%;
+    background:var(--brass);
+    box-shadow:0 0 0 3px rgba(27,24,21,0.55);
+  }
+  .barber-photo{
+    position:relative;
+    width:100%;
+    aspect-ratio:4/5;
+    overflow:hidden;
+    background:var(--ink-soft);
+    border-bottom:1px solid var(--line);
+  }
+  .barber-photo img{
+    width:100%; height:100%;
+    object-fit:cover; object-position:center;
+    display:block;
+    transition:transform 0.4s ease;
+  }
+  .barber-card:hover .barber-photo img{transform:scale(1.07);}
+  .barber-photo .placeholder-initials{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Big Shoulders Display',sans-serif;
+    font-size:2.6rem;
+    color:var(--brass-dim);
+    background:repeating-linear-gradient(135deg, var(--ink-card) 0 14px, var(--ink-soft) 14px 28px);
+    transition:transform 0.4s ease;
+  }
+  .barber-card:hover .placeholder-initials{transform:scale(1.07);}
+  .barber-hover-tag{
+    position:absolute; left:0; right:0; bottom:0;
+    padding:12px 16px 10px;
+    background:linear-gradient(to top, rgba(15,13,10,0.85), transparent);
+    color:var(--bone);
+    font-family:'Space Mono',monospace;
+    font-size:0.74rem;
+    opacity:0;
+    transform:translateY(10px);
+    transition:opacity 0.25s ease, transform 0.25s ease;
+    pointer-events:none;
+  }
+  .barber-card:hover .barber-hover-tag, .barber-card:focus-visible .barber-hover-tag{
+    opacity:1; transform:translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .barber-card, .barber-card:hover, .barber-photo img, .barber-card:hover .barber-photo img,
+    .placeholder-initials, .barber-card:hover .placeholder-initials, .barber-hover-tag{
+      transition:none !important; transform:none !important;
+    }
+    .barber-card:hover .barber-hover-tag{opacity:1;}
+  }
+  .barber-card-body{padding:16px 18px 0;}
+  .barber-card .num{
+    font-family:'Space Mono',monospace;
+    font-size:0.75rem;
+    color:var(--brass-dim);
+  }
+  .barber-card .name{
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:700;
+    font-size:1.35rem;
+    margin-top:6px;
+  }
+  .barber-card .tear{
+    border-top:1px dashed var(--line-strong);
+    margin:12px 0;
+  }
+  .barber-card .spec{
+    font-size:0.88rem;
+    color:var(--bone-dim);
+  }
+  .barber-card .off{
+    margin-top:10px;
+    font-family:'Space Mono',monospace;
+    font-size:0.72rem;
+    color:var(--bone-dim);
+  }
+
+  /* ---------- booking panel ---------- */
+  .booking-panel{
+    margin-top:36px;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    background:var(--ink-soft);
+    padding:26px;
+    display:none;
+  }
+  .booking-panel.open{display:block;}
+  .booking-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    flex-wrap:wrap; gap:8px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:16px; margin-bottom:20px;
+  }
+  .booking-head h3{font-size:1.3rem;}
+  .booking-head .tag{color:var(--bone-dim);font-size:0.85rem;}
+
+  .field-label{
+    font-size:0.82rem;
+    color:var(--bone-dim);
+    margin:0 0 10px;
+  }
+  .day-tabs{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:6px;
+    margin-bottom:22px;
+  }
+  .day-tab{
+    flex:0 0 auto;
+    background:transparent;
+    border:1px solid var(--line-strong);
+    color:var(--bone);
+    padding:10px 16px;
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    border-radius:var(--radius);
+    font-family:'Space Mono',monospace;
+    font-size:0.82rem;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .day-tab.active{background:var(--brass);border-color:var(--brass);color:var(--ink);font-weight:700;}
+
+  .time-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(84px,1fr));
+    gap:8px;
+    margin-bottom:22px;
+  }
+  .time-chip{
+    background:transparent;
+    border:1px solid var(--line-strong);
+    color:var(--bone);
+    padding:10px 4px;
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:var(--radius);
+    font-family:'Space Mono',monospace;
+    font-size:0.82rem;
+    cursor:pointer;
+    text-align:center;
+  }
+  .time-chip.active{background:var(--brass);border-color:var(--brass);color:var(--ink);font-weight:700;}
+  .empty-note{color:var(--bone-dim);font-size:0.88rem;}
+
+  .name-field{
+    width:100%;
+    background:var(--ink);
+    border:1px solid var(--line-strong);
+    color:var(--bone);
+    padding:13px 14px;
+    border-radius:var(--radius);
+    font-size:0.95rem;
+    margin-bottom:18px;
+  }
+  .name-field:focus{outline:2px solid var(--brass); outline-offset:1px;}
+
+  .preview{
+    background:var(--ink);
+    border:1px dashed var(--line-strong);
+    padding:14px 16px;
+    border-radius:var(--radius);
+    font-family:'Space Mono',monospace;
+    font-size:0.85rem;
+    color:var(--bone-dim);
+    margin-bottom:18px;
+    min-height:20px;
+  }
+
+  .send-btn{
+    background:#2FA84F;
+    color:#fff;
+    border:none;
+    padding:14px 22px;
+    border-radius:var(--radius);
+    font-weight:700;
+    font-size:0.95rem;
+    cursor:pointer;
+    width:100%;
+  }
+  .send-btn:disabled{background:var(--ink-card);color:var(--bone-dim);cursor:not-allowed;border:1px solid var(--line);}
+  .send-note{font-size:0.8rem;color:var(--bone-dim);margin-top:10px;}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line); padding:26px 0 50px; margin-top:20px;}
+  .footer-row{
+    display:flex; align-items:center; justify-content:space-between;
+    color:var(--bone-dim); font-size:0.85rem; flex-wrap:wrap; gap:10px;
+  }
+  .staff-link{
+    background:none; border:none; color:var(--bone-dim);
+    font-size:0.85rem; cursor:pointer; padding:6px 4px;
+  }
+  .staff-link:hover{color:var(--bone);}
+
+  /* ---------- admin overlay ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(10,9,7,0.88);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:40px 16px; overflow-y:auto; z-index:50;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--ink-soft);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    width:100%; max-width:560px;
+    padding:28px;
+  }
+  .modal.wide{max-width:760px;}
+  .modal h3{font-size:1.4rem;margin-bottom:6px;}
+  .modal .sub{color:var(--bone-dim);font-size:0.88rem;margin-bottom:22px;}
+  .modal label{display:block;font-size:0.82rem;color:var(--bone-dim);margin:14px 0 6px;}
+  .modal input[type=text], .modal input[type=password], .modal input[type=tel]{
+    width:100%; background:var(--ink); border:1px solid var(--line-strong);
+    color:var(--bone); padding:11px 12px; border-radius:var(--radius); font-size:0.92rem;
+  }
+  .row-btns{display:flex; gap:10px; margin-top:22px; flex-wrap:wrap;}
+  .btn{
+    border:1px solid var(--line-strong); background:transparent; color:var(--bone);
+    padding:11px 18px; border-radius:var(--radius); font-size:0.88rem; cursor:pointer;
+  }
+  .btn.primary{background:var(--brass); border-color:var(--brass); color:var(--ink); font-weight:700;}
+  .btn.danger{border-color:var(--rust); color:#E9998C;}
+  .btn.ghost{color:var(--bone-dim);}
+  .error-text{color:#E9998C; font-size:0.85rem; margin-top:10px; display:none;}
+
+  .admin-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .admin-tabs{display:flex; gap:6px; border-bottom:1px solid var(--line); margin-bottom:22px;}
+  .admin-tab{background:none;border:none;color:var(--bone-dim);padding:10px 4px;margin-right:18px;cursor:pointer;font-size:0.92rem;border-bottom:2px solid transparent;}
+  .admin-tab.active{color:var(--bone);border-bottom-color:var(--brass);}
+  .admin-panel-body{display:none;}
+  .admin-panel-body.active{display:block;}
+
+  .barber-edit-card{border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px;}
+  .barber-edit-head{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
+  .day-schedule-row{display:grid; grid-template-columns:56px 1fr; gap:10px; align-items:flex-start; margin-top:10px;}
+  .day-label{font-family:'Space Mono',monospace; font-size:0.8rem; color:var(--bone-dim); padding-top:8px;}
+  .chip-list{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .chip{
+    background:var(--ink); border:1px solid var(--line-strong); color:var(--bone);
+    padding:6px 8px; border-radius:var(--radius); font-family:'Space Mono',monospace; font-size:0.78rem;
+    display:flex; align-items:center; gap:6px;
+  }
+  .chip button{background:none;border:none;color:var(--bone-dim);cursor:pointer;font-size:0.85rem;line-height:1;}
+  .chip-add{display:flex; gap:6px;}
+  .chip-add input{
+    width:80px; background:var(--ink); border:1px solid var(--line-strong); color:var(--bone);
+    padding:6px 8px; border-radius:var(--radius); font-family:'Space Mono',monospace; font-size:0.78rem;
+  }
+  .chip-add button{
+    background:var(--ink-card); border:1px solid var(--line-strong); color:var(--bone);
+    border-radius:var(--radius); padding:6px 10px; font-size:0.8rem; cursor:pointer;
+  }
+  .add-barber-form{border:1px dashed var(--line-strong); border-radius:var(--radius); padding:16px; margin-top:8px;}
+  .small-note{font-size:0.78rem; color:var(--bone-dim); margin-top:6px;}
+
+  /* image upload control (barber photos) */
+  .img-upload{display:flex; align-items:center; gap:12px; margin:14px 0;}
+  .img-thumb{width:64px; height:64px; border-radius:var(--radius); border:1px solid var(--line-strong); object-fit:cover; background:var(--ink); flex-shrink:0;}
+  .img-thumb.empty{display:flex; align-items:center; justify-content:center; color:var(--bone-dim); font-size:0.7rem; text-align:center; padding:4px;}
+  .img-upload-btns{display:flex; flex-direction:column; gap:6px;}
+  .img-upload-btns .btn{padding:7px 12px; font-size:0.8rem;}
+  input[type=file]{display:none;}
+  .upload-status{font-size:0.76rem; color:var(--brass-dim);}
+
+  @media (max-width:600px){
+    .wrap{padding:0 18px;}
+    .hero{padding:44px 0 40px;}
+    .section{padding:38px 0;}
+    .pole{width:150px;height:150px; top:-20px; right:-30px;}
+    .day-schedule-row{grid-template-columns:1fr;}
+    .day-label{padding-top:0;}
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a href="index.html"><img class="logo-mark" src="koxyos-logo.png" alt="Koxyos"></a>
+      <div class="social-row">
+        <a href="#" aria-label="Instagram"><img src="instagram.png" alt="Instagram"></a>
+        <a href="#" aria-label="Facebook"><img src="facebook.png" alt="Facebook"></a>
+        <a href="https://wa.me/+212636150632" target="_blank" rel="noopener" aria-label="WhatsApp"><img src="whatsapp.png" alt="WhatsApp"></a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="pole"></div>
+    <div class="wrap">
+      <h1 style="margin-bottom:20px;"><img class="logo-mark lg" src="koxyos-logo.png" alt="Koxyos"></h1>
+      <p id="heroTagline">Traditional cuts, modern shop. Pick your barber and grab a chair.</p>
+      <button class="cta" onclick="document.getElementById('barbers').scrollIntoView({behavior:'smooth'})" data-i18n="book_appt">Book an appointment</button>
+    </div>
+  </section>
+
+  <section class="section" id="barbers">
+    <div class="wrap">
+      <h2 data-i18n="choose_barber">Choose your barber</h2>
+      <p class="lede" data-i18n="choose_lede">Tap a name to see their open times for the next couple of weeks.</p>
+      <div class="barber-row-wrap">
+        <button class="row-arrow prev" id="rowPrev" aria-label="Show previous barbers" data-i18n-aria-label="aria_prev" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="barber-row" id="barberRow">
+          <p class="empty-note" data-i18n="loading_barbers">Loading barbers…</p>
+        </div>
+        <button class="row-arrow next" id="rowNext" aria-label="Show more barbers" data-i18n-aria-label="aria_next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <div class="swipe-hint"><span class="line"></span><span data-i18n="swipe_hint">Swipe to see more barbers</span></div>
+      </div>
+
+      <div class="booking-panel" id="bookingPanel">
+        <div class="booking-head">
+          <div>
+            <h3 id="bpName"></h3>
+            <div class="tag" id="bpSpec"></div>
+          </div>
+        </div>
+
+        <p class="field-label" data-i18n="pick_day">Pick a day</p>
+        <div class="day-tabs" id="dayTabs"></div>
+
+        <p class="field-label" id="timeLabel" data-i18n="pick_time">Pick a time</p>
+        <div class="time-grid" id="timeGrid"></div>
+
+        <p class="field-label" data-i18n="your_name">Your name</p>
+        <input class="name-field" id="customerName" type="text" placeholder="First and last name" data-i18n-placeholder="name_placeholder" maxlength="60" autocomplete="name">
+        <p id="nameError" style="display:none;color:#E9998C;font-size:0.8rem;margin:-12px 0 16px;" data-i18n="name_error">Enter your name (at least 2 letters).</p>
+
+        <div class="preview" id="messagePreview" data-i18n="preview_placeholder">Pick a day, a time, and enter your name to see your message.</div>
+
+        <button class="send-btn" id="sendBtn" disabled onclick="sendWhatsApp()" data-i18n="send_whatsapp">Send on WhatsApp</button>
+        <p class="send-note" id="sendNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <img class="logo-mark sm" src="koxyos-logo.png" alt="Koxyos" style="margin-bottom:16px;">
+      <div class="footer-row">
+        <span id="footerLine">© <span id="yearNow"></span> Koxyos</span>
+        <span style="display:flex;gap:16px;align-items:center;">
+          <a href="privacy.html" style="color:var(--bone-dim);font-size:0.85rem;text-decoration:underline;" data-i18n="foot_privacy">Privacy</a>
+          <a href="terms.html" style="color:var(--bone-dim);font-size:0.85rem;text-decoration:underline;" data-i18n="foot_terms">Terms</a>
+          <button class="staff-link" onclick="openLogin()" data-i18n="staff">Staff</button>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LOGIN OVERLAY -->
+  <div class="overlay" id="loginOverlay">
+    <div class="modal">
+      <h3 data-i18n="owner_login">Owner login</h3>
+      <p class="sub" data-i18n="owner_login_sub">Sign in to edit the schedule, barbers, or WhatsApp number.</p>
+      <label for="loginPassword" data-i18n="password_label">Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" data-i18n-placeholder="password_placeholder">
+      <p class="error-text" id="loginError" data-i18n="wrong_password">That password isn't right. Try again.</p>
+      <div class="row-btns">
+        <button class="btn primary" onclick="submitLogin()" data-i18n="log_in">Log in</button>
+        <button class="btn ghost" onclick="closeOverlay('loginOverlay')" data-i18n="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN OVERLAY -->
+  <div class="overlay" id="adminOverlay">
+    <div class="modal wide">
+      <div class="admin-head">
+        <h3 data-i18n="shop_settings">Shop settings</h3>
+        <button class="btn ghost" onclick="logoutAdmin()" data-i18n="log_out">Log out</button>
+      </div>
+      <p class="sub" data-i18n="shop_settings_sub">Changes save straight away and appear for customers immediately.</p>
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="general" onclick="switchAdminTab('general')" data-i18n="tab_general">General</button>
+        <button class="admin-tab" data-tab="barbers" onclick="switchAdminTab('barbers')" data-i18n="tab_barbers">Barbers &amp; schedule</button>
+        <button class="admin-tab" data-tab="security" onclick="switchAdminTab('security')" data-i18n="tab_password">Password</button>
+      </div>
+
+      <div class="admin-panel-body active" id="tab-general">
+        <label for="cfgShopName" data-i18n="shop_name_label">Shop name</label>
+        <input type="text" id="cfgShopName">
+
+        <label for="cfgTagline" data-i18n="tagline_label">Tagline</label>
+        <input type="text" id="cfgTagline">
+
+        <label for="cfgWhatsapp" data-i18n="whatsapp_label">WhatsApp number (with country code, digits only — e.g. 15551234567)</label>
+        <input type="tel" id="cfgWhatsapp" placeholder="Leave blank until you're ready" data-i18n-placeholder="whatsapp_placeholder">
+        <p class="small-note" data-i18n="whatsapp_note">This is the number customers get sent to when they confirm a booking.</p>
+
+        <div class="row-btns">
+          <button class="btn primary" onclick="saveGeneral()" data-i18n="save_changes">Save changes</button>
+        </div>
+        <p class="error-text" id="generalSaved" style="color:var(--brass);" data-i18n="saved">Saved.</p>
+      </div>
+
+      <div class="admin-panel-body" id="tab-barbers">
+        <div id="barberEditList"></div>
+
+        <div class="add-barber-form">
+          <label for="newBarberName" data-i18n="add_barber_name_label">Add a barber — name</label>
+          <input type="text" id="newBarberName" placeholder="Full name" data-i18n-placeholder="full_name_placeholder">
+          <label for="newBarberSpec" data-i18n="specialty_label">Specialty</label>
+          <input type="text" id="newBarberSpec" placeholder="e.g. Fades, beard work" data-i18n-placeholder="specialty_placeholder">
+          <div class="row-btns">
+            <button class="btn primary" onclick="addBarber()" data-i18n="add_barber">Add barber</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-panel-body" id="tab-security">
+        <label for="newPassword" data-i18n="new_password_label">New password</label>
+        <input type="password" id="newPassword" placeholder="Choose a new password" data-i18n-placeholder="new_password_placeholder">
+        <div class="row-btns">
+          <button class="btn primary" onclick="changePassword()" data-i18n="update_password">Update password</button>
+        </div>
+        <p class="error-text" id="pwSaved" style="color:var(--brass);" data-i18n="password_updated">Password updated.</p>
+      </div>
+
+      <div class="row-btns" style="margin-top:28px; border-top:1px solid var(--line); padding-top:18px;">
+        <button class="btn ghost" onclick="closeOverlay('adminOverlay')" data-i18n="close">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script src="i18n.js"></script>
+<script src="config.js"></script>
+<script src="api-client.js"></script>
+<script>
+  // Page fade transitions: fade in on load, fade out before navigating away.
+  window.addEventListener('pageshow', function(){
+    document.body.classList.remove('page-out');
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ document.body.classList.add('page-in'); });
+    });
+  });
+  document.querySelectorAll('a[href]').forEach(function(link){
+    const href = link.getAttribute('href');
+    if(!href || href.charAt(0) === '#') return;
+    if(link.target === '_blank') return;
+    if(/^(https?:|mailto:|tel:)/.test(href)) return;
+    link.addEventListener('click', function(e){
+      if(e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      document.body.classList.remove('page-in');
+      document.body.classList.add('page-out');
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setTimeout(function(){ window.location.href = href; }, reduce ? 0 : 300);
+    });
+  });
+
+  // Barber row: native touch/trackpad swipe works out of the box; this adds
+  // mouse drag-to-scroll, wheel support, and clickable prev/next arrows.
+  (function(){
+    const row = document.getElementById('barberRow');
+    const prevBtn = document.getElementById('rowPrev');
+    const nextBtn = document.getElementById('rowNext');
+    if(!row) return;
+
+    let isDown = false, startX = 0, startScroll = 0;
+    row.addEventListener('mousedown', function(e){
+      isDown = true; row.classList.add('dragging');
+      startX = e.pageX; startScroll = row.scrollLeft;
+    });
+    window.addEventListener('mouseup', function(){ isDown = false; row.classList.remove('dragging'); });
+    row.addEventListener('mousemove', function(e){
+      if(!isDown) return;
+      e.preventDefault();
+      row.scrollLeft = startScroll - (e.pageX - startX);
+    });
+    row.addEventListener('wheel', function(e){
+      if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+        row.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    }, {passive:false});
+
+    function updateArrows(){
+      if(!prevBtn || !nextBtn) return;
+      prevBtn.disabled = row.scrollLeft <= 4;
+      nextBtn.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+    }
+    function scrollByCard(dir){
+      const card = row.querySelector('.barber-card');
+      const step = card ? card.getBoundingClientRect().width + 18 : row.clientWidth * 0.8;
+      row.scrollBy({ left: dir * step, behavior: 'smooth' });
+    }
+    if(prevBtn) prevBtn.addEventListener('click', function(){ scrollByCard(-1); });
+    if(nextBtn) nextBtn.addEventListener('click', function(){ scrollByCard(1); });
+    row.addEventListener('scroll', updateArrows);
+    window.addEventListener('resize', updateArrows);
+    // Re-check once barbers render in (row starts with a loading placeholder).
+    const arrowObserver = new MutationObserver(updateArrows);
+    arrowObserver.observe(row, { childList: true });
+    updateArrows();
+  })();
+
+  window.I18N_DICT = {
+    en: {
+      __docTitle: "Koxyos — Book a chair",
+      book_appt: "Book an appointment",
+      choose_barber: "Choose your barber",
+      choose_lede: "Tap a name to see their open times for the next couple of weeks.",
+      aria_prev: "Show previous barbers", aria_next: "Show more barbers",
+      loading_barbers: "Loading barbers…",
+      swipe_hint: "Swipe to see more barbers",
+      pick_day: "Pick a day", pick_time: "Pick a time", your_name: "Your name",
+      name_placeholder: "First and last name",
+      name_error: "Enter your name (at least 2 letters).",
+      preview_placeholder: "Pick a day, a time, and enter your name to see your message.",
+      send_whatsapp: "Send on WhatsApp",
+      foot_privacy: "Privacy", foot_terms: "Terms", staff: "Staff",
+      owner_login: "Owner login",
+      owner_login_sub: "Sign in to edit the schedule, barbers, or WhatsApp number.",
+      password_label: "Password", password_placeholder: "Enter password",
+      wrong_password: "That password isn't right. Try again.",
+      log_in: "Log in", cancel: "Cancel",
+      shop_settings: "Shop settings", log_out: "Log out",
+      shop_settings_sub: "Changes save straight away and appear for customers immediately.",
+      tab_general: "General", tab_barbers: "Barbers &amp; schedule", tab_password: "Password",
+      shop_name_label: "Shop name", tagline_label: "Tagline",
+      whatsapp_label: "WhatsApp number (with country code, digits only — e.g. 15551234567)",
+      whatsapp_placeholder: "Leave blank until you're ready",
+      whatsapp_note: "This is the number customers get sent to when they confirm a booking.",
+      save_changes: "Save changes", saved: "Saved.",
+      add_barber_name_label: "Add a barber — name", full_name_placeholder: "Full name",
+      specialty_label: "Specialty", specialty_placeholder: "e.g. Fades, beard work",
+      add_barber: "Add barber",
+      new_password_label: "New password", new_password_placeholder: "Choose a new password",
+      update_password: "Update password", password_updated: "Password updated.",
+      close: "Close",
+      days_short: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      days_full: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+      months_full: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+      view_open_times: "View open times",
+      chair_label: "Chair",
+      working_days_one: " working day / week",
+      working_days_many: " working days / week",
+      no_hours_set: "No hours set yet",
+      no_barbers_yet: "No barbers set up yet.",
+      no_upcoming_hours: "This barber has no upcoming hours posted right now.",
+      pick_day_above: "Pick a day above.",
+      booking_msg: function(name, barberName, dayName, monthName, dateNum, time){
+        return "Hi, I'm " + name + ". I'd like an appointment with " + barberName + " on " + dayName + ", " + monthName + " " + dateNum + " at " + time + ". Is that available?";
+      },
+      booking_not_on: "Booking isn't turned on yet — the shop still needs to add its WhatsApp number.",
+      too_many_attempts: function(secs){ return "Too many attempts. Try again in " + secs + "s."; },
+      save_failed: function(msg){ return "Couldn't save your change: " + msg; },
+      load_failed: "Couldn't load the shop's data. Please check your connection and refresh.",
+      name_field_label: "Name", photo_url_label: "Photo",
+      photo_url_placeholder: "https://... (leave blank to show initials)",
+      choose_photo: "Choose photo", remove_photo: "Remove",
+      uploading: "Uploading…", upload_failed: function(msg){ return "Upload failed: " + msg; },
+      remove: "Remove",
+      time_placeholder: "14:00", add_short: "+ Add",
+      use_24h: "Use 24-hour time like 09:00 or 15:30.",
+      enter_new_barber_name: "Enter a name for the new barber first.",
+      confirm_remove_barber: "Remove this barber? This cannot be undone.",
+      book_a_chair_title: "Book a chair"
+    },
+    fr: {
+      __docTitle: "Koxyos — Réserver un fauteuil",
+      book_appt: "Prendre rendez-vous",
+      choose_barber: "Choisissez votre barbier",
+      choose_lede: "Touchez un nom pour voir ses disponibilités des prochaines semaines.",
+      aria_prev: "Voir les barbiers précédents", aria_next: "Voir plus de barbiers",
+      loading_barbers: "Chargement des barbiers…",
+      swipe_hint: "Glissez pour voir plus de barbiers",
+      pick_day: "Choisissez un jour", pick_time: "Choisissez une heure", your_name: "Votre nom",
+      name_placeholder: "Prénom et nom",
+      name_error: "Indiquez votre nom (au moins 2 lettres).",
+      preview_placeholder: "Choisissez un jour, une heure et indiquez votre nom pour voir votre message.",
+      send_whatsapp: "Envoyer sur WhatsApp",
+      foot_privacy: "Confidentialité", foot_terms: "Conditions", staff: "Personnel",
+      owner_login: "Connexion propriétaire",
+      owner_login_sub: "Connectez-vous pour modifier le planning, les barbiers ou le numéro WhatsApp.",
+      password_label: "Mot de passe", password_placeholder: "Entrez le mot de passe",
+      wrong_password: "Ce mot de passe est incorrect. Réessayez.",
+      log_in: "Se connecter", cancel: "Annuler",
+      shop_settings: "Paramètres du salon", log_out: "Se déconnecter",
+      shop_settings_sub: "Les changements sont enregistrés immédiatement et visibles par les clients tout de suite.",
+      tab_general: "Général", tab_barbers: "Barbiers &amp; planning", tab_password: "Mot de passe",
+      shop_name_label: "Nom du salon", tagline_label: "Slogan",
+      whatsapp_label: "Numéro WhatsApp (avec indicatif pays, chiffres uniquement — ex. 15551234567)",
+      whatsapp_placeholder: "Laissez vide pour l'instant",
+      whatsapp_note: "C'est le numéro vers lequel les clients sont dirigés lorsqu'ils confirment une réservation.",
+      save_changes: "Enregistrer", saved: "Enregistré.",
+      add_barber_name_label: "Ajouter un barbier — nom", full_name_placeholder: "Nom complet",
+      specialty_label: "Spécialité", specialty_placeholder: "ex. Fades, taille de barbe",
+      add_barber: "Ajouter le barbier",
+      new_password_label: "Nouveau mot de passe", new_password_placeholder: "Choisissez un nouveau mot de passe",
+      update_password: "Mettre à jour le mot de passe", password_updated: "Mot de passe mis à jour.",
+      close: "Fermer",
+      days_short: ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],
+      days_full: ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'],
+      months_full: ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
+      view_open_times: "Voir les disponibilités",
+      chair_label: "Fauteuil",
+      working_days_one: " jour travaillé / semaine",
+      working_days_many: " jours travaillés / semaine",
+      no_hours_set: "Aucun horaire défini",
+      no_barbers_yet: "Aucun barbier n'a encore été ajouté.",
+      no_upcoming_hours: "Ce barbier n'a pas d'horaires à venir pour le moment.",
+      pick_day_above: "Choisissez un jour ci-dessus.",
+      booking_msg: function(name, barberName, dayName, monthName, dateNum, time){
+        return "Bonjour, je suis " + name + ". Je souhaiterais un rendez-vous avec " + barberName + " le " + dayName + " " + dateNum + " " + monthName + " à " + time + ". Est-ce disponible ?";
+      },
+      booking_not_on: "La réservation n'est pas encore activée — le salon doit encore ajouter son numéro WhatsApp.",
+      too_many_attempts: function(secs){ return "Trop de tentatives. Réessayez dans " + secs + "s."; },
+      save_failed: function(msg){ return "Impossible d'enregistrer : " + msg; },
+      load_failed: "Impossible de charger les données du salon. Vérifiez votre connexion et actualisez la page.",
+      name_field_label: "Nom", photo_url_label: "Photo",
+      photo_url_placeholder: "https://... (laissez vide pour afficher les initiales)",
+      choose_photo: "Choisir une photo", remove_photo: "Supprimer",
+      uploading: "Envoi…", upload_failed: function(msg){ return "Échec de l'envoi : " + msg; },
+      remove: "Supprimer",
+      time_placeholder: "14:00", add_short: "+ Ajouter",
+      use_24h: "Utilisez un format 24h comme 09:00 ou 15:30.",
+      enter_new_barber_name: "Entrez d'abord un nom pour le nouveau barbier.",
+      confirm_remove_barber: "Supprimer ce barbier ? Cette action est irréversible.",
+      book_a_chair_title: "Réserver un fauteuil"
+    }
+  };
+  function t(key){
+    var lang = (window.KoxyosLang && window.KoxyosLang.get()) || 'en';
+    var dict = window.I18N_DICT[lang] || window.I18N_DICT.en;
+    return dict[key] !== undefined ? dict[key] : (window.I18N_DICT.en[key] !== undefined ? window.I18N_DICT.en[key] : key);
+  }
+
+  const DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'];
+  function DAY_SHORT_ARR(){ return t('days_short'); }
+  function DAY_FULL_ARR(){ return t('days_full'); }
+  function MONTH_FULL_ARR(){ return t('months_full'); }
+
+  // Fallback shown only if the API can't be reached at all (e.g. wrong
+  // apiBaseUrl in config.js) — keeps the page from rendering completely
+  // blank while pointing at the real problem.
+  const FALLBACK_CONFIG = {
+    shopName: "Koxyos",
+    tagline: "Traditional cuts, modern shop. Pick your barber and grab a chair.",
+    whatsapp: ""
+  };
+
+  let shopConfig = null;
+  let barbers = [];
+  let isAdmin = false;
+  let selectedBarberId = null;
+  let selectedDayKey = null; // full ISO-ish key: yyyy-mm-dd
+  let selectedTime = null;
+  let upcomingCache = {}; // barberId -> array of day entries
+  let loadError = false;
+
+  document.getElementById('yearNow').textContent = new Date().getFullYear();
+
+  init();
+
+  async function init(){
+    await loadShopConfig();
+    await loadBarbers();
+    renderShopInfo();
+    renderBarbers();
+  }
+
+  async function loadShopConfig(){
+    try{
+      shopConfig = await window.KoxyosAPI.getConfig();
+      loadError = false;
+    }catch(e){
+      console.error('Failed to load shop config from API:', e);
+      shopConfig = {...FALLBACK_CONFIG};
+      loadError = true;
+    }
+  }
+
+  async function loadBarbers(){
+    try{
+      barbers = await window.KoxyosAPI.getBarbers();
+      loadError = false;
+    }catch(e){
+      console.error('Failed to load barbers from API:', e);
+      barbers = [];
+      loadError = true;
+    }
+  }
+
+  async function persistConfig(){
+    try{
+      shopConfig = await window.KoxyosAPI.updateConfig({
+        shopName: shopConfig.shopName, tagline: shopConfig.tagline, whatsapp: shopConfig.whatsapp
+      });
+      return true;
+    }catch(e){
+      console.error('save failed', e);
+      alert(t('save_failed')(e.message));
+      return false;
+    }
+  }
+
+  function renderShopInfo(){
+    document.title = shopConfig.shopName + " — " + t('book_a_chair_title');
+    document.getElementById('heroTagline').textContent = shopConfig.tagline;
+    document.getElementById('footerLine').innerHTML = '© <span id="yearNow2">' + new Date().getFullYear() + '</span> ' + escapeHtml(shopConfig.shopName);
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function escapeAttr(str){
+    return escapeHtml(str).replace(/"/g,'&quot;');
+  }
+
+  /* ---------------- customer view ---------------- */
+
+  function computeUpcoming(barber){
+    const out = [];
+    const today = new Date();
+    for(let i=0; i<21 && out.length<6; i++){
+      const d = new Date(today);
+      d.setDate(today.getDate()+i);
+      const weekdayIdx = (d.getDay()+6)%7; // 0 = Mon
+      const key = DAY_KEYS[weekdayIdx];
+      const times = (barber.schedule && barber.schedule[key]) || [];
+      if(times.length>0){
+        out.push({
+          dateKey: d.toISOString().slice(0,10),
+          weekdayIdx, dayKey:key,
+          date:d, times: times
+        });
+      }
+    }
+    return out;
+  }
+
+  function renderBarbers(){
+    const row = document.getElementById('barberRow');
+    if(barbers.length===0){
+      row.innerHTML = '<p class="empty-note">' + escapeHtml(loadError ? t('load_failed') : t('no_barbers_yet')) + '</p>';
+      return;
+    }
+    row.innerHTML = '';
+    barbers.forEach((b, idx) => {
+      const workingDays = DAY_KEYS.filter(k => (b.schedule[k]||[]).length>0).length;
+      const card = document.createElement('button');
+      card.className = 'barber-card' + (b.id===selectedBarberId ? ' selected':'');
+      card.type = 'button';
+      const initials = (b.name || '').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+      const photoHtml = b.photo
+        ? '<img src="' + escapeAttr(b.photo) + '" alt="' + escapeAttr(b.name) + '">'
+        : '<div class="placeholder-initials">' + escapeHtml(initials) + '</div>';
+      const offText = workingDays>0
+        ? workingDays + (workingDays===1 ? t('working_days_one') : t('working_days_many'))
+        : t('no_hours_set');
+      card.innerHTML =
+        '<div class="barber-photo">' + photoHtml + '<div class="barber-hover-tag">' + escapeHtml(t('view_open_times')) + '</div></div>' +
+        '<div class="barber-card-body">' +
+          '<div class="num mono">' + escapeHtml(t('chair_label')) + ' ' + String(idx+1).padStart(2,'0') + '</div>' +
+          '<div class="name">' + escapeHtml(b.name) + '</div>' +
+          '<div class="tear"></div>' +
+          '<div class="spec">' + escapeHtml(b.specialty || '') + '</div>' +
+          '<div class="off">' + escapeHtml(offText) + '</div>' +
+        '</div>';
+      card.onclick = () => selectBarber(b.id);
+      row.appendChild(card);
+    });
+  }
+
+  function selectBarber(id){
+    selectedBarberId = id;
+    selectedDayKey = null;
+    selectedTime = null;
+    renderBarbers();
+    const barber = barbers.find(b=>b.id===id);
+    const panel = document.getElementById('bookingPanel');
+    if(!barber){ panel.classList.remove('open'); return; }
+    panel.classList.add('open');
+    document.getElementById('bpName').textContent = barber.name;
+    document.getElementById('bpSpec').textContent = barber.specialty || '';
+
+    upcomingCache[id] = computeUpcoming(barber);
+    renderDayTabs(id);
+    renderTimeGrid(id);
+    updatePreview();
+    panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  function renderDayTabs(barberId){
+    const days = upcomingCache[barberId] || [];
+    const wrap = document.getElementById('dayTabs');
+    wrap.innerHTML = '';
+    if(days.length===0){
+      wrap.innerHTML = '<p class="empty-note">' + escapeHtml(t('no_upcoming_hours')) + '</p>';
+      return;
+    }
+    if(!selectedDayKey) selectedDayKey = days[0].dateKey;
+    days.forEach(d => {
+      const btn = document.createElement('button');
+      btn.className = 'day-tab' + (d.dateKey===selectedDayKey ? ' active':'');
+      btn.textContent = DAY_SHORT_ARR()[d.weekdayIdx] + ' ' + d.date.getDate();
+      btn.onclick = () => { selectedDayKey = d.dateKey; selectedTime=null; renderDayTabs(barberId); renderTimeGrid(barberId); updatePreview(); };
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderTimeGrid(barberId){
+    const days = upcomingCache[barberId] || [];
+    const day = days.find(d=>d.dateKey===selectedDayKey);
+    const grid = document.getElementById('timeGrid');
+    grid.innerHTML = '';
+    if(!day){
+      grid.innerHTML = '<p class="empty-note">' + escapeHtml(t('pick_day_above')) + '</p>';
+      return;
+    }
+    day.times.forEach(t => {
+      const btn = document.createElement('button');
+      btn.className = 'time-chip' + (t===selectedTime ? ' active':'');
+      btn.textContent = t;
+      btn.onclick = () => { selectedTime = t; renderTimeGrid(barberId); updatePreview(); };
+      grid.appendChild(btn);
+    });
+  }
+
+  function isValidName(name){
+    return name.length >= 2 && /\p{L}/u.test(name);
+  }
+
+  function buildMessage(){
+    const barber = barbers.find(b=>b.id===selectedBarberId);
+    const days = upcomingCache[selectedBarberId] || [];
+    const day = days.find(d=>d.dateKey===selectedDayKey);
+    const name = document.getElementById('customerName').value.trim();
+    if(!barber || !day || !selectedTime || !isValidName(name)) return null;
+    const dayName = DAY_FULL_ARR()[day.weekdayIdx];
+    const monthName = MONTH_FULL_ARR()[day.date.getMonth()];
+    const dateNum = day.date.getDate();
+    return t('booking_msg')(name, barber.name, dayName, monthName, dateNum, selectedTime);
+  }
+
+  function updatePreview(){
+    const nameRaw = document.getElementById('customerName').value.trim();
+    const nameErrorEl = document.getElementById('nameError');
+    nameErrorEl.style.display = (nameRaw.length > 0 && !isValidName(nameRaw)) ? 'block' : 'none';
+
+    const msg = buildMessage();
+    const preview = document.getElementById('messagePreview');
+    const sendBtn = document.getElementById('sendBtn');
+    const note = document.getElementById('sendNote');
+    if(msg){
+      preview.textContent = msg;
+      const hasNumber = shopConfig.whatsapp && shopConfig.whatsapp.trim().length>0;
+      sendBtn.disabled = !hasNumber;
+      note.textContent = hasNumber ? '' : t('booking_not_on');
+    } else {
+      preview.textContent = t('preview_placeholder');
+      sendBtn.disabled = true;
+      note.textContent = '';
+    }
+  }
+  document.getElementById('customerName').addEventListener('input', updatePreview);
+
+  function sendWhatsApp(){
+    const msg = buildMessage();
+    if(!msg) return;
+    const number = (shopConfig.whatsapp || '').replace(/[^0-9]/g,'');
+    if(!number) return;
+    const url = 'https://wa.me/' + number + '?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank');
+  }
+
+  /* ---------------- admin: login ---------------- */
+
+  function openLogin(){
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').style.display = 'none';
+    document.getElementById('loginOverlay').classList.add('open');
+  }
+  function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
+
+  let loginFailCount = 0;
+  let loginLockedUntil = 0;
+  let loginInFlight = false;
+
+  async function submitLogin(){
+    const errEl = document.getElementById('loginError');
+    const now = Date.now();
+    if(now < loginLockedUntil){
+      const secs = Math.ceil((loginLockedUntil - now)/1000);
+      errEl.textContent = t('too_many_attempts')(secs);
+      errEl.style.display = 'block';
+      return;
+    }
+    if(loginInFlight) return;
+    const pwd = document.getElementById('loginPassword').value;
+    loginInFlight = true;
+    try{
+      await window.KoxyosAPI.login(pwd);
+      loginFailCount = 0;
+      isAdmin = true;
+      closeOverlay('loginOverlay');
+      openAdmin();
+    } catch(e) {
+      loginFailCount++;
+      if(loginFailCount >= 5){
+        loginLockedUntil = Date.now() + 30000;
+        errEl.textContent = t('too_many_attempts')(30);
+      } else {
+        errEl.textContent = t('wrong_password');
+      }
+      errEl.style.display = 'block';
+    } finally {
+      loginInFlight = false;
+    }
+  }
+  document.getElementById('loginPassword').addEventListener('keydown', e=>{ if(e.key==='Enter') submitLogin(); });
+
+  function logoutAdmin(){
+    isAdmin = false;
+    window.KoxyosAPI.clearToken();
+    closeOverlay('adminOverlay');
+  }
+
+  /* ---------------- admin: dashboard ---------------- */
+
+  // Uploads a photo file and returns the URL the server stores it at.
+  async function uploadImageFile(file, statusEl){
+    if(typeof window.KoxyosAPI.uploadImage !== 'function'){
+      throw new Error(t('upload_failed')('not supported by this server yet'));
+    }
+    if(statusEl) statusEl.textContent = t('uploading');
+    try{
+      const result = await window.KoxyosAPI.uploadImage(file);
+      const url = typeof result === 'string' ? result : (result && (result.url || result.image_url));
+      if(!url) throw new Error('No URL returned by uploadImage');
+      if(statusEl) statusEl.textContent = '';
+      return url;
+    }catch(e){
+      if(statusEl) statusEl.textContent = t('upload_failed')(e.message || String(e));
+      throw e;
+    }
+  }
+
+  function openAdmin(){
+    document.getElementById('cfgShopName').value = shopConfig.shopName;
+    document.getElementById('cfgTagline').value = shopConfig.tagline;
+    document.getElementById('cfgWhatsapp').value = shopConfig.whatsapp;
+    document.getElementById('generalSaved').style.display = 'none';
+    document.getElementById('pwSaved').style.display = 'none';
+    renderBarberEditList();
+    switchAdminTab('general');
+    document.getElementById('adminOverlay').classList.add('open');
+  }
+
+  function switchAdminTab(tab){
+    document.querySelectorAll('.admin-tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+    document.querySelectorAll('.admin-panel-body').forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+  }
+
+  async function saveGeneral(){
+    shopConfig.shopName = document.getElementById('cfgShopName').value.trim() || FALLBACK_CONFIG.shopName;
+    shopConfig.tagline = document.getElementById('cfgTagline').value.trim();
+    shopConfig.whatsapp = document.getElementById('cfgWhatsapp').value.trim();
+    const ok = await persistConfig();
+    if(!ok) return;
+    renderShopInfo();
+    updatePreview();
+    const saved = document.getElementById('generalSaved');
+    saved.style.display = 'block';
+    setTimeout(()=>{ saved.style.display='none'; }, 1800);
+  }
+
+  async function changePassword(){
+    const val = document.getElementById('newPassword').value;
+    if(!val) return;
+    try{
+      await window.KoxyosAPI.updatePassword(val);
+    }catch(e){
+      alert(t('save_failed')(e.message));
+      return;
+    }
+    document.getElementById('newPassword').value = '';
+    const saved = document.getElementById('pwSaved');
+    saved.style.display = 'block';
+    setTimeout(()=>{ saved.style.display='none'; }, 1800);
+  }
+
+  function renderBarberEditList(){
+    const wrap = document.getElementById('barberEditList');
+    wrap.innerHTML = '';
+    barbers.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'barber-edit-card';
+
+      const head = document.createElement('div');
+      head.className = 'barber-edit-head';
+      head.innerHTML =
+        '<div style="flex:1;">' +
+          '<label style="margin-top:0;">' + escapeHtml(t('name_field_label')) + '</label>' +
+          '<input type="text" value="' + escapeAttr(b.name) + '" data-field="name" data-id="' + b.id + '">' +
+          '<label>' + escapeHtml(t('specialty_label')) + '</label>' +
+          '<input type="text" value="' + escapeAttr(b.specialty||'') + '" data-field="specialty" data-id="' + b.id + '">' +
+          '<label>' + escapeHtml(t('photo_url_label')) + '</label>' +
+          '<div class="img-upload">' +
+            (b.photo
+              ? '<img class="img-thumb" src="' + escapeAttr(b.photo) + '" alt="">'
+              : '<img class="img-thumb empty" alt="">') +
+            '<div class="img-upload-btns">' +
+              '<button type="button" class="btn barber-photo-btn" data-id="' + b.id + '">' + escapeHtml(t('choose_photo')) + '</button>' +
+              (b.photo ? '<button type="button" class="btn ghost barber-photo-remove" data-id="' + b.id + '">' + escapeHtml(t('remove_photo')) + '</button>' : '') +
+              '<input type="file" accept="image/*" class="barber-photo-file" data-id="' + b.id + '">' +
+            '</div>' +
+            '<span class="upload-status barber-photo-status" data-id="' + b.id + '"></span>' +
+          '</div>' +
+        '</div>';
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn danger';
+      delBtn.textContent = t('remove');
+      delBtn.style.marginLeft = '10px';
+      delBtn.onclick = () => removeBarber(b.id);
+      head.appendChild(delBtn);
+      card.appendChild(head);
+
+      const barberPhotoFile = head.querySelector('.barber-photo-file');
+      head.querySelector('.barber-photo-btn').addEventListener('click', () => barberPhotoFile.click());
+      const barberPhotoRemove = head.querySelector('.barber-photo-remove');
+      if(barberPhotoRemove){
+        barberPhotoRemove.addEventListener('click', async () => {
+          const barber = barbers.find(x => x.id === b.id);
+          const prevPhoto = barber.photo;
+          barber.photo = '';
+          renderBarbers();
+          renderBarberEditList();
+          try{
+            await window.KoxyosAPI.updateBarber(barber.id, { photo: '' });
+          }catch(e){
+            barber.photo = prevPhoto;
+            renderBarbers();
+            renderBarberEditList();
+            alert(t('save_failed')(e.message));
+          }
+        });
+      }
+      barberPhotoFile.addEventListener('change', async () => {
+        const file = barberPhotoFile.files && barberPhotoFile.files[0];
+        if(!file) return;
+        const statusEl = head.querySelector('.barber-photo-status');
+        const barber = barbers.find(x => x.id === b.id);
+        try{
+          const url = await uploadImageFile(file, statusEl);
+          barber.photo = url;
+          renderBarbers();
+          renderBarberEditList();
+          await window.KoxyosAPI.updateBarber(barber.id, { photo: url });
+        }catch(e){
+          alert(t('save_failed')(e.message || String(e)));
+        }
+      });
+
+      DAY_KEYS.forEach((dayKey, i) => {
+        const row = document.createElement('div');
+        row.className = 'day-schedule-row';
+        const label = document.createElement('div');
+        label.className = 'day-label';
+        label.textContent = DAY_SHORT_ARR()[i];
+        row.appendChild(label);
+
+        const chipWrap = document.createElement('div');
+        chipWrap.className = 'chip-list';
+
+        (b.schedule[dayKey]||[]).forEach(t => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.innerHTML = '<span>' + t + '</span>';
+          const x = document.createElement('button');
+          x.textContent = '×';
+          x.onclick = () => removeTimeSlot(b.id, dayKey, t);
+          chip.appendChild(x);
+          chipWrap.appendChild(chip);
+        });
+
+        const addWrap = document.createElement('span');
+        addWrap.className = 'chip-add';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = t('time_placeholder');
+        const addBtn = document.createElement('button');
+        addBtn.textContent = t('add_short');
+        addBtn.onclick = () => {
+          const v = input.value.trim();
+          if(/^([01]\d|2[0-3]):[0-5]\d$/.test(v)){
+            addTimeSlot(b.id, dayKey, v);
+          } else if(v) {
+            alert(t('use_24h'));
+          }
+        };
+        addWrap.appendChild(input);
+        addWrap.appendChild(addBtn);
+        chipWrap.appendChild(addWrap);
+
+        row.appendChild(chipWrap);
+        card.appendChild(row);
+      });
+
+      card.querySelectorAll('input[data-field]').forEach(inp => {
+        inp.addEventListener('change', async () => {
+          const barber = barbers.find(x=>x.id===inp.dataset.id);
+          const field = inp.dataset.field;
+          const prevValue = barber[field];
+          const newValue = inp.value.trim();
+          barber[field] = newValue;
+          renderBarbers();
+          try{
+            await window.KoxyosAPI.updateBarber(barber.id, { [field]: newValue });
+          }catch(e){
+            barber[field] = prevValue;
+            inp.value = prevValue;
+            renderBarbers();
+            alert(t('save_failed')(e.message));
+          }
+        });
+      });
+
+      wrap.appendChild(card);
+    });
+  }
+
+  async function addTimeSlot(barberId, dayKey, time){
+    const b = barbers.find(x=>x.id===barberId);
+    const prevSchedule = JSON.parse(JSON.stringify(b.schedule));
+    if(!b.schedule[dayKey]) b.schedule[dayKey] = [];
+    if(!b.schedule[dayKey].includes(time)){
+      b.schedule[dayKey].push(time);
+      b.schedule[dayKey].sort();
+      renderBarberEditList();
+      renderBarbers();
+      try{
+        await window.KoxyosAPI.updateBarberSchedule(barberId, b.schedule);
+      }catch(e){
+        b.schedule = prevSchedule;
+        renderBarberEditList();
+        renderBarbers();
+        alert(t('save_failed')(e.message));
+      }
+    }
+  }
+
+  async function removeTimeSlot(barberId, dayKey, time){
+    const b = barbers.find(x=>x.id===barberId);
+    const prevSchedule = JSON.parse(JSON.stringify(b.schedule));
+    b.schedule[dayKey] = (b.schedule[dayKey]||[]).filter(t=>t!==time);
+    renderBarberEditList();
+    renderBarbers();
+    try{
+      await window.KoxyosAPI.updateBarberSchedule(barberId, b.schedule);
+    }catch(e){
+      b.schedule = prevSchedule;
+      renderBarberEditList();
+      renderBarbers();
+      alert(t('save_failed')(e.message));
+    }
+  }
+
+  async function addBarber(){
+    const name = document.getElementById('newBarberName').value.trim();
+    const spec = document.getElementById('newBarberSpec').value.trim();
+    if(!name){ alert(t('enter_new_barber_name')); return; }
+    try{
+      const created = await window.KoxyosAPI.createBarber({ name, specialty: spec });
+      barbers.push(created);
+    }catch(e){
+      alert(t('save_failed')(e.message));
+      return;
+    }
+    document.getElementById('newBarberName').value='';
+    document.getElementById('newBarberSpec').value='';
+    renderBarberEditList();
+    renderBarbers();
+  }
+
+  async function removeBarber(id){
+    if(!confirm(t('confirm_remove_barber'))) return;
+    try{
+      await window.KoxyosAPI.deleteBarber(id);
+    }catch(e){
+      alert(t('save_failed')(e.message));
+      return;
+    }
+    barbers = barbers.filter(b=>b.id!==id);
+    if(selectedBarberId===id){ selectedBarberId=null; document.getElementById('bookingPanel').classList.remove('open'); }
+    renderBarberEditList();
+    renderBarbers();
+  }
+
+  window.onLangChange = function(lang){
+    if(shopConfig) renderShopInfo();
+    if(barbers && barbers.length){
+      renderBarbers();
+      if(selectedBarberId){
+        renderDayTabs(selectedBarberId);
+        renderTimeGrid(selectedBarberId);
+      }
+    }
+    updatePreview();
+    if(document.getElementById('adminOverlay').classList.contains('open')){
+      renderBarberEditList();
+    }
+  };
+</script>
+</body>
+</html>

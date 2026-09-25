@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms & Conditions — Koxyos</title>
+<meta name="description" content="Booking terms for appointments made through the Koxyos website.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1815; --ink-soft:#211D17; --ink-card:#28221B;
+    --bone:#EDE6D6; --bone-dim:#B2A996;
+    --brass:#C89B3C;
+    --line: rgba(237,230,214,0.14);
+    --line-strong: rgba(237,230,214,0.26);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ink);color:var(--bone);font-family:'Work Sans',sans-serif;line-height:1.65;
+    opacity:0; transition:opacity 0.32s ease;}
+  body.page-in{opacity:1;}
+  body.page-out{opacity:0;}
+  @media (prefers-reduced-motion: reduce){
+    body{transition:none; opacity:1;}
+  }
+  h1,h2{font-family:'Big Shoulders Display',sans-serif;font-weight:700;margin:0;}
+  a{color:var(--brass);}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px;}
+  header{border-bottom:1px solid var(--line);padding:18px 0;}
+  .brand{font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:1.3rem;}
+  .brand span{color:var(--brass);}
+  .back-link{font-size:0.85rem;color:var(--bone-dim);}
+  main{padding:50px 0 70px;}
+  h1{font-size:2.1rem;margin-bottom:10px;}
+  .updated{color:var(--bone-dim);font-size:0.85rem;margin-bottom:36px;}
+  h2{font-size:1.25rem;margin:34px 0 12px;color:var(--brass);}
+  p, li{color:var(--bone-dim);font-size:0.95rem;}
+  ul{padding-left:20px;}
+  .note{background:var(--ink-card);border:1px solid var(--line-strong);border-radius:3px;padding:16px 18px;font-size:0.88rem;margin-top:40px;}
+  footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--bone-dim);font-size:0.85rem;}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div class="brand">Koxyos</div>
+      <a class="back-link" href="index.html" data-i18n="back">← Back to site</a>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <h1 data-i18n="title">Terms &amp; Conditions</h1>
+      <p class="updated"><span data-i18n="updated_label">Last updated:</span> <span id="today"></span></p>
+
+      <p data-i18n="intro">These terms cover booking an appointment with Koxyos through this website. By sending a booking request, you agree to the points below.</p>
+
+      <h2 data-i18n="h_how">How booking works</h2>
+      <p data-i18n="p_how">Selecting a barber, day, and time on this site prepares a message and opens WhatsApp for you to send it. Sending that message is a <strong>request</strong>, not a confirmed booking — your appointment is confirmed once the shop replies to you on WhatsApp saying so.</p>
+
+      <h2 data-i18n="h_avail">Availability</h2>
+      <p data-i18n="p_avail">Times shown reflect the barber's usual working hours as set by the shop, but two people could request the same slot before the shop confirms either one. If your requested time is no longer available, the shop will offer you the nearest alternative.</p>
+
+      <h2 data-i18n="h_cancel">Cancellations &amp; lateness</h2>
+      <ul>
+        <li data-i18n="li_cancel1">If you need to cancel or reschedule, message the shop on WhatsApp as early as you can.</li>
+        <li data-i18n="li_cancel2">Arriving significantly late may mean your slot is given to someone else or your service is shortened.</li>
+        <li data-i18n="li_cancel3">Repeated no-shows may affect whether future booking requests are accepted.</li>
+      </ul>
+
+      <h2 data-i18n="h_pricing">Pricing</h2>
+      <p data-i18n="p_pricing">Prices listed on the site are current at the time of publishing but may change. The price confirmed by the shop at the time of your visit is the one that applies.</p>
+
+      <h2 data-i18n="h_age">Age</h2>
+      <p data-i18n="p_age">Anyone under 18 should book with a parent or guardian's knowledge.</p>
+
+      <h2 data-i18n="h_changes">Changes to these terms</h2>
+      <p data-i18n="p_changes">These terms may be updated from time to time; the version shown on this page is always the current one.</p>
+
+      <div class="note" data-i18n="note">This is a template set of booking terms, written for a small appointment-based shop like this one. It's not a substitute for legal advice — worth a quick review before publishing, especially the cancellation policy, which you should adjust to match how you actually want to run things.</div>
+    </div>
+  </main>
+  <footer>
+    <div class="wrap">© <span id="yr"></span> Koxyos</div>
+  </footer>
+  <script>
+    window.I18N_DICT = {
+      en: {
+        __docTitle: "Terms & Conditions — Koxyos",
+        back: "← Back to site",
+        title: "Terms &amp; Conditions",
+        updated_label: "Last updated:",
+        intro: "These terms cover booking an appointment with Koxyos through this website. By sending a booking request, you agree to the points below.",
+        h_how: "How booking works",
+        p_how: "Selecting a barber, day, and time on this site prepares a message and opens WhatsApp for you to send it. Sending that message is a <strong>request</strong>, not a confirmed booking — your appointment is confirmed once the shop replies to you on WhatsApp saying so.",
+        h_avail: "Availability",
+        p_avail: "Times shown reflect the barber's usual working hours as set by the shop, but two people could request the same slot before the shop confirms either one. If your requested time is no longer available, the shop will offer you the nearest alternative.",
+        h_cancel: "Cancellations &amp; lateness",
+        li_cancel1: "If you need to cancel or reschedule, message the shop on WhatsApp as early as you can.",
+        li_cancel2: "Arriving significantly late may mean your slot is given to someone else or your service is shortened.",
+        li_cancel3: "Repeated no-shows may affect whether future booking requests are accepted.",
+        h_pricing: "Pricing",
+        p_pricing: "Prices listed on the site are current at the time of publishing but may change. The price confirmed by the shop at the time of your visit is the one that applies.",
+        h_age: "Age",
+        p_age: "Anyone under 18 should book with a parent or guardian's knowledge.",
+        h_changes: "Changes to these terms",
+        p_changes: "These terms may be updated from time to time; the version shown on this page is always the current one.",
+        note: "This is a template set of booking terms, written for a small appointment-based shop like this one. It's not a substitute for legal advice — worth a quick review before publishing, especially the cancellation policy, which you should adjust to match how you actually want to run things."
+      },
+      fr: {
+        __docTitle: "Conditions générales — Koxyos",
+        back: "← Retour au site",
+        title: "Conditions générales",
+        updated_label: "Dernière mise à jour :",
+        intro: "Ces conditions couvrent la réservation d'un rendez-vous chez Koxyos via ce site. En envoyant une demande de réservation, vous acceptez les points ci-dessous.",
+        h_how: "Comment fonctionne la réservation",
+        p_how: "Choisir un barbier, un jour et une heure sur ce site prépare un message et ouvre WhatsApp pour que vous puissiez l'envoyer. L'envoi de ce message est une <strong>demande</strong>, pas une réservation confirmée — votre rendez-vous est confirmé une fois que le salon vous répond sur WhatsApp pour vous le dire.",
+        h_avail: "Disponibilité",
+        p_avail: "Les horaires affichés reflètent les heures de travail habituelles du barbier telles que définies par le salon, mais deux personnes pourraient demander le même créneau avant que le salon n'en confirme un. Si le créneau demandé n'est plus disponible, le salon vous proposera l'alternative la plus proche.",
+        h_cancel: "Annulations &amp; retards",
+        li_cancel1: "Si vous devez annuler ou reporter, contactez le salon sur WhatsApp le plus tôt possible.",
+        li_cancel2: "Un retard important peut entraîner que votre créneau soit donné à quelqu'un d'autre ou que votre service soit raccourci.",
+        li_cancel3: "Des absences répétées sans prévenir peuvent affecter l'acceptation de vos futures demandes de réservation.",
+        h_pricing: "Tarifs",
+        p_pricing: "Les prix indiqués sur le site sont valables au moment de la publication mais peuvent changer. Le prix confirmé par le salon au moment de votre visite est celui qui s'applique.",
+        h_age: "Âge",
+        p_age: "Toute personne de moins de 18 ans doit réserver avec l'accord d'un parent ou tuteur.",
+        h_changes: "Modifications de ces conditions",
+        p_changes: "Ces conditions peuvent être mises à jour de temps à autre ; la version affichée sur cette page est toujours la version en vigueur.",
+        note: "Ceci est un modèle de conditions de réservation, rédigé pour un petit salon fonctionnant sur rendez-vous comme celui-ci. Il ne remplace pas un conseil juridique — il est conseillé de le faire relire avant publication, en particulier la politique d'annulation, à adapter selon votre façon de fonctionner."
+      }
+    };
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    window.onLangChange = function(lang){
+      document.getElementById('today').textContent = new Date().toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', {year:'numeric', month:'long', day:'numeric'});
+    };
+  </script>
+  <script src="i18n.js"></script>
+  <script>
+    window.addEventListener('pageshow', function(){
+      document.body.classList.remove('page-out');
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){ document.body.classList.add('page-in'); });
+      });
+    });
+    document.querySelectorAll('a[href]').forEach(function(link){
+      const href = link.getAttribute('href');
+      if(!href || href.charAt(0) === '#') return;
+      if(link.target === '_blank') return;
+      if(/^(https?:|mailto:|tel:)/.test(href)) return;
+      link.addEventListener('click', function(e){
+        if(e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        document.body.classList.remove('page-in');
+        document.body.classList.add('page-out');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        setTimeout(function(){ window.location.href = href; }, reduce ? 0 : 300);
+      });
+    });
+  </script>
+</body>
+</html>
