@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { loadShopOr404 } = require('../shops');
 const { issueAdminToken, requireAdmin } = require('../auth');
+const googlePlaces = require('../googlePlaces');
 
 const router = express.Router({ mergeParams: true });
 
@@ -438,6 +439,108 @@ router.delete('/gallery/:id', async (req, res, next) => {
 });
 
 // ---------------- image upload ----------------
+
+// ---------------- Google Reviews ----------------
+
+// POST /api/shops/:slug/admin/google-reviews/lookup  { query }
+// Resolves free text (a business name + city usually works best; a Google
+// Maps link is also worth trying) to one specific Google listing, for the
+// admin to confirm before it's saved. Doesn't change anything by itself.
+router.post('/google-reviews/lookup', async (req, res) => {
+  const { query } = req.body || {};
+  if (!query || !String(query).trim()) {
+    return res.status(400).json({ error: 'Type your business name (and city), or paste your Google Maps link.' });
+  }
+  try {
+    const found = await googlePlaces.findPlace(String(query).trim());
+    res.json(found);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// PUT /api/shops/:slug/admin/google-reviews  { placeId?, minRating? }
+// placeId: attaches this shop to a specific Google listing (from the
+// lookup step above) and does an immediate fetch so the widget has real
+// data right away instead of waiting up to 12h for the cache to naturally
+// expire. Omit placeId to just change minRating on an already-configured
+// shop — that's a pure filter change, so it skips calling Google entirely.
+router.put('/google-reviews', async (req, res, next) => {
+  try {
+    const { placeId, minRating } = req.body || {};
+    const min = minRating !== undefined ? Math.max(1, Math.min(5, parseInt(minRating, 10) || 4)) : undefined;
+
+    if (!placeId) {
+      if (!req.shopRow.google_place_id) {
+        return res.status(400).json({ error: 'No Google listing is set up yet — run the lookup first.' });
+      }
+      if (min === undefined) {
+        return res.status(400).json({ error: 'Nothing to update — pass placeId and/or minRating.' });
+      }
+      const { rows } = await db.query(
+        `update shops set google_reviews_min_rating = $1, updated_at = now() where id = $2
+         returning google_place_id, google_reviews_min_rating`,
+        [min, req.shop.id]
+      );
+      return res.json({ placeId: rows[0].google_place_id, minRating: rows[0].google_reviews_min_rating });
+    }
+
+    const cleanPlaceId = String(placeId).trim();
+    const details = await googlePlaces.fetchPlaceDetails(cleanPlaceId);
+    const cache = googlePlaces.shapeDetails(cleanPlaceId, details);
+    const effectiveMin = min !== undefined ? min : req.shopRow.google_reviews_min_rating;
+
+    const { rows } = await db.query(
+      `update shops
+       set google_place_id = $1, google_reviews_min_rating = $2,
+           google_reviews_cache = $3, google_reviews_cached_at = now(), updated_at = now()
+       where id = $4
+       returning google_place_id, google_reviews_min_rating`,
+      [cleanPlaceId, effectiveMin, JSON.stringify(cache), req.shop.id]
+    );
+    res.json({ placeId: rows[0].google_place_id, minRating: rows[0].google_reviews_min_rating, name: cache.name });
+  } catch (e) {
+    if (e instanceof googlePlaces.GooglePlacesError) return res.status(400).json({ error: e.message });
+    next(e);
+  }
+});
+
+// DELETE /api/shops/:slug/admin/google-reviews
+// Unlinks the Google listing — the public widget goes back to hidden.
+router.delete('/google-reviews', async (req, res, next) => {
+  try {
+    await db.query(
+      `update shops
+       set google_place_id = '', google_reviews_cache = null, google_reviews_cached_at = null, updated_at = now()
+       where id = $1`,
+      [req.shop.id]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/shops/:slug/admin/google-reviews/refresh
+// Forces a fresh Google fetch right now, bypassing the 12h cache —
+// useful right after configuring, or to check a new review shows up.
+router.post('/google-reviews/refresh', async (req, res, next) => {
+  try {
+    if (!req.shopRow.google_place_id) {
+      return res.status(400).json({ error: 'No Google listing is set up yet.' });
+    }
+    const details = await googlePlaces.fetchPlaceDetails(req.shopRow.google_place_id);
+    const cache = googlePlaces.shapeDetails(req.shopRow.google_place_id, details);
+    await db.query('update shops set google_reviews_cache = $1, google_reviews_cached_at = now() where id = $2', [
+      JSON.stringify(cache),
+      req.shop.id,
+    ]);
+    res.json({ ok: true });
+  } catch (e) {
+    if (e instanceof googlePlaces.GooglePlacesError) return res.status(400).json({ error: e.message });
+    next(e);
+  }
+});
 
 // POST /api/shops/:slug/admin/uploads  (multipart/form-data, field name "image")
 // Used by both the gallery drag-and-drop and (optionally) service/barber

@@ -28,6 +28,12 @@ services:
       JWT_SECRET: local-dev-secret-change-me
       CORS_ORIGINS: "http://localhost:5500,http://127.0.0.1:5500"
       PORT: "8080"
+      # One key here serves every shop on this install — each shop just
+      # points at its own Google listing from its admin panel (Google
+      # Reviews tab). Get a key from Google Cloud Console with the
+      # "Places API" enabled; the free monthly credit easily covers this.
+      # Leave blank and the Google Reviews section just stays hidden.
+      GOOGLE_PLACES_API_KEY: ""
     volumes:
       # Persist uploaded gallery/service/barber photos across container
       # restarts and rebuilds. On a host with a single, persistent disk
